@@ -1,0 +1,465 @@
+{{ 'template-customers.css' | asset_url | stylesheet_tag }}
+<style>
+  .login__form .input--readonly,
+  .login__form .input[readonly],
+  .login__form .input[disabled] {
+    background-color: rgba(0, 0, 0, 0.06);
+    cursor: not-allowed;
+    opacity: 0.85;
+  }
+</style>
+<section
+  class="
+    customer login page account-section
+    section--divider-{{ section.settings.divider_style }}
+    {{ section.settings.section_padding }}
+  "
+  data-section-id="{{ section.id }}"
+  data-section-type="register"
+    style="
+    --section-bg: {{ section.settings.background_color }};
+    --section-text: {{ section.settings.text_color }};
+  "
+>
+  <div class="login__inner page__inner section">
+    <header class="login__header page__header">
+      <h1 class="login__heading article__heading ff-heading fs-heading-1-base">{{ 'customer.register.title' | t }}</h1>
+    </header>
+
+      {% if section.settings.heading_subtext != blank %}
+        <div class="login__heading-subtext rte">
+          {{ section.settings.heading_subtext }}
+        </div>
+      {% endif %}
+        
+    <div class="login__main">
+      {%- assign formId = 'RegisterForm' -%}
+      {% form 'create_customer', id: formId, class: 'login__form' %}
+        {%- assign success_msg = 'customer.register.success' | t -%}
+        {%- render 'form-status', form: form, form_id: formId, success_message: success_msg -%}
+
+        <label for="{{ formId }}-FirstName">{{ 'customer.register.first_name' | t }}*</label>
+        <input
+          type="text"
+          name="customer[note][Contact First Name]"
+          id="{{ formId }}-FirstName"
+          class="input"
+          autocomplete="given-name"
+          required
+          aria-required="true"
+        >
+
+        <label for="{{ formId }}-LastName">{{ 'customer.register.last_name' | t }}*</label>
+        <input
+          type="text"
+          name="customer[note][Contact Last Name]"
+          id="{{ formId }}-LastName"
+          class="input"
+          autocomplete="family-name"
+          required
+          aria-required="true"
+        >
+        <label for="{{ formId }}-BusinessName">Business Name*</label>
+        <input
+          type="text"
+          id="{{ formId }}-BusinessName"
+          name="customer[note][Business Name]"
+          class="input"
+          required
+          aria-required="true"
+        >
+        <input
+          type="hidden"
+          name="customer[first_name]"
+          id="{{ formId }}-AccountFirstName"
+          value=""
+        >
+        <input
+          type="hidden"
+          name="customer[last_name]"
+          id="{{ formId }}-AccountLastName"
+          value="X"
+        >
+        {% comment %} <label for="{{ formId }}-ABN">ABN*</label>
+        <input
+          type="text"
+          id="{{ formId }}-ABN"
+          name="customer[metafields][business][registration_no]"
+          class="input"
+          required
+          aria-required="true"
+        > {% endcomment %}
+        <label for="{{ formId }}-ABN">ABN*</label>
+        <input
+          type="text"
+          id="{{ formId }}-ABN"
+          name="customer[note][ABN]"
+          class="input"
+          maxlength="11"
+          pattern="[0-9]{11}"
+          inputmode="numeric"
+          required
+          aria-required="true"
+          title="Please enter exactly 11 digits"
+        >
+
+
+        <label for="{{ formId }}-email">{{ 'customer.register.email' | t }}*</label>
+        <input
+          type="email"
+          name="customer[email]"
+          id="{{ formId }}-email"
+          class="input {% if form.errors contains 'email' %} input--error{% endif %}"
+          {% if form.email %}
+            value="{{ form.email }}"
+          {% endif %}
+          autocorrect="off"
+          autocapitalize="off"
+          autocomplete="email"
+          aria-required="true"
+          {%- if form.errors contains 'email' -%}
+            class="input--error"
+            aria-invalid="true"
+            aria-describedby="{{ formId }}-email-error"
+          {%- endif -%}
+        >
+        {% comment %} <label for="{{ formId }}-Phone">Contact Number*</label>
+        <input
+          type="tel"
+          name="customer[phone]"
+          id="{{ formId }}-Phone"
+          class="input {% if form.errors contains 'phone' %} input--error{% endif %}"
+          {% if form.phone %}
+            value="{{ form.phone }}"
+          {% endif %}
+          autocomplete="tel"
+          pattern="[0-9+\-\s()]*"
+          required
+          aria-required="true"
+          {%- if form.errors contains 'phone' -%}
+            aria-invalid="true"
+            aria-describedby="{{ formId }}-phone-error"
+          {%- endif -%}
+        > {% endcomment %}
+        <label for="{{ formId }}-Phone">Contact Number*</label>
+        <input
+          type="tel"
+          name="customer[note][Phone]"
+          id="{{ formId }}-Phone"
+          class="input"
+          autocomplete="tel"
+          pattern="^(\+61|0)[0-9\s\-\(\)]{9,14}$"
+          minlength="10"
+          required
+          aria-required="true"
+        >
+        <label for="{{ formId }}-password">{{ 'customer.register.password' | t }}*</label>
+        <input
+          type="password"
+          name="customer[password]"
+          id="{{ formId }}-password"
+          class="input {% if form.errors contains 'password' %} input--error{% endif %}"
+          aria-required="true"
+          {%- if form.errors contains 'password' -%}
+            class="input--error"
+            aria-invalid="true"
+            aria-describedby="{{ formId }}-password-error"
+          {%- endif -%}
+        >
+        <label for="{{ formId }}-State">State*</label>
+        <select
+          id="{{ formId }}-State"
+          name="customer[note][State]"
+          class="input"
+          required
+        >
+          <option value="">Select State</option>
+
+          {% assign states = section.settings.state_list | newline_to_br | split: '<br />' %}
+          {% for state in states %}
+            <option value="{{ state | strip }}">
+              {{ state | strip }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <div class="form__field form__field--checkbox">
+          <input
+            type="checkbox"
+            id="{{ formId }}-AcceptsMarketing"
+            name="customer[accepts_marketing]"
+            value="true"
+            {% if form.accepts_marketing %}checked{% endif %}
+            
+            aria-required="true"
+          >
+          <label for="{{ formId }}-AcceptsMarketing">
+            {{ section.settings.marketing_optin_text }}
+          </label>
+        </div>
+
+
+        <button type="submit" class="btn btn--primary btn--full">
+          {{ 'customer.register.submit' | t }}
+        </button>
+      {% endform %}
+
+
+    </div>
+      {% if section.settings.footer_links_text != blank %}
+        <div class="login__footer-links rte">
+          {{ section.settings.footer_links_text }}
+        </div>
+      {% endif %}
+  </div>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const form = document.getElementById("RegisterForm");
+
+  if (!form) return;
+
+  const firstName = document.getElementById("RegisterForm-FirstName");
+  const lastName  = document.getElementById("RegisterForm-LastName");
+  const business  = document.getElementById("RegisterForm-BusinessName");
+  const accountFirstName = document.getElementById("RegisterForm-AccountFirstName");
+  const accountLastName  = document.getElementById("RegisterForm-AccountLastName");
+  const abn       = document.getElementById("RegisterForm-ABN");
+  const email     = document.getElementById("RegisterForm-email");
+  const phone     = document.getElementById("RegisterForm-Phone");
+  const password  = document.getElementById("RegisterForm-password");
+  const state     = document.getElementById("RegisterForm-State");
+
+  // Prefill + lock fields from invite URL query params, e.g.
+  // /account/register/?email=test@test.com&businessName=ABCDE%20FGH
+  //   &firstName=Jane&lastName=Doe&abn=12345678901&phone=0412345678
+  //   &state=New%20South%20Wales%20(NSW)
+  // Values are also cached in sessionStorage so they survive form error reloads.
+  (function prefillFromQueryParams() {
+    const params = new URLSearchParams(window.location.search);
+    const storageKey = "pp_register_invite";
+    const paramKeys = [
+      "email",
+      "businessName",
+      "firstName",
+      "lastName",
+      "abn",
+      "phone",
+      "state"
+    ];
+
+    let invite = {};
+    const hasUrlParams = paramKeys.some(function (key) {
+      return (params.get(key) || "").trim();
+    });
+
+    if (hasUrlParams) {
+      paramKeys.forEach(function (key) {
+        invite[key] = (params.get(key) || "").trim();
+      });
+      try {
+        sessionStorage.setItem(storageKey, JSON.stringify(invite));
+      } catch (e) {}
+    } else {
+      try {
+        invite = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+      } catch (e) {
+        invite = {};
+      }
+    }
+
+    function lockInput(field, value) {
+      if (!field || !value) return;
+      field.value = value;
+      field.readOnly = true;
+      field.setAttribute("aria-readonly", "true");
+      field.classList.add("input--readonly");
+    }
+
+    // <select> ignores readOnly — disable it and mirror value into a hidden input
+    function lockSelect(field, value) {
+      if (!field || !value) return;
+
+      const match = Array.from(field.options).find(function (option) {
+        return option.value === value || option.text.trim() === value;
+      });
+      if (!match) return;
+
+      field.value = match.value;
+      field.disabled = true;
+      field.setAttribute("aria-readonly", "true");
+      field.classList.add("input--readonly");
+
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = field.name;
+      hidden.value = match.value;
+      field.insertAdjacentElement("afterend", hidden);
+    }
+
+    lockInput(email, invite.email);
+    lockInput(business, invite.businessName);
+    lockInput(firstName, invite.firstName);
+    lockInput(lastName, invite.lastName);
+    lockInput(abn, invite.abn);
+    lockInput(phone, invite.phone);
+    lockSelect(state, invite.state);
+  })();
+
+  form.addEventListener("submit", function () {
+    if (accountFirstName && business) {
+      accountFirstName.value = business.value.trim();
+    }
+    // Shopify requires a non-blank last_name on create_customer.
+    if (accountLastName) {
+      accountLastName.value = "X";
+    }
+  });
+
+  function setValidation(field, messages) {
+    field.addEventListener("invalid", function () {
+      if (field.validity.valueMissing) {
+        field.setCustomValidity(messages.required || "This field is required.");
+      } else if (field.validity.typeMismatch) {
+        field.setCustomValidity(messages.type || "Please enter a valid value.");
+      } else if (field.validity.patternMismatch) {
+        field.setCustomValidity(messages.pattern || "Invalid format.");
+      } else if (field.validity.tooShort) {
+        field.setCustomValidity(messages.short || "Input is too short.");
+      } else if (field.validity.tooLong) {
+        field.setCustomValidity(messages.long || "Input is too long.");
+      }
+    });
+
+    field.addEventListener("input", function () {
+      field.setCustomValidity("");
+    });
+  }
+
+  setValidation(firstName, {
+    required: "Please enter your first name."
+  });
+
+  setValidation(lastName, {
+    required: "Please enter your last name."
+  });
+
+  setValidation(business, {
+    required: "Please enter your business name."
+  });
+
+  setValidation(abn, {
+    required: "Please enter your ABN.",
+    pattern: "ABN must be exactly 11 digits."
+  });
+
+  setValidation(email, {
+    required: "Please enter your email address.",
+    type: "Please enter a valid email address."
+  });
+
+  setValidation(phone, {
+    required: "Please enter your contact number.",
+    pattern: "Please enter a valid phone number.",
+    short: "Phone number must be at least 10 digits."
+  });
+
+  setValidation(password, {
+    required: "Please enter your password."
+  });
+
+  setValidation(state, {
+    required: "Please select your state."
+  });
+
+});
+</script>
+    {% schema %}
+    {
+      "name": "t:sections.main_customer_register.name",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:shared.settings.section_style.header.content"
+        },
+        {
+        "type": "richtext",
+        "id": "heading_subtext",
+        "label": "Heading Sub Text",
+        "default": "<p>Add additional information below the heading</p>"
+        },
+
+        {
+          "type": "select",
+          "id": "divider_style",
+          "label": "t:shared.settings.section_style.divider_style.label",
+          "options": [
+            {
+              "value": "none",
+              "label": "t:shared.settings.section_style.divider_style.options.none"
+            },
+            {
+              "value": "solid",
+              "label": "t:shared.settings.section_style.divider_style.options.solid"
+            }
+          ],
+          "default": "none"
+        },
+        {
+        "type": "textarea",
+        "id": "state_list",
+        "label": "State List",
+        "info": "Enter one state per line",
+        },
+        {
+        "type": "select",
+        "id": "section_padding",
+        "label": "t:shared.settings.section_style.section_padding.label",
+        "options": [
+        {
+          "value": "section--vertical-padding-none",
+          "label": "t:shared.settings.section_style.section_padding.options.none"
+        },
+        {
+          "value": "section--vertical-padding-top-bottom",
+          "label": "t:shared.settings.section_style.section_padding.options.both"
+        },
+        {
+          "value": "section--vertical-padding-top-only",
+          "label": "t:shared.settings.section_style.section_padding.options.top"
+        },
+        {
+          "value": "section--vertical-padding-bottom-only",
+          "label": "t:shared.settings.section_style.section_padding.options.bottom"
+        }
+      ],
+      "default": "section--vertical-padding-bottom-only"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:shared.settings.color.general.background.label",
+      "default": "#D9A49C"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:shared.settings.color.general.text.label",
+      "default": "#000000"
+    },
+    {
+      "type": "richtext",
+      "id": "footer_links_text",
+      "label": "Bottom Text",
+    },
+    {
+      "type": "richtext",
+      "id": "marketing_optin_text",
+      "label": "Marketing Opt-in Text",
+      "default": "<p>I’d like to receive marketing communications from Pastel Pines, including product updates, industry insights, and special offers. You can unsubscribe at any time. View our <a href=\"/policies/privacy-policy\">Privacy Policy</a> for details on how we handle your personal information.</p>"
+    }
+
+  ]
+}
+{% endschema %}

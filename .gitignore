@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node / tooling
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Shopify CLI
+.shopify/
+*.local
+config/settings_data.json.bak

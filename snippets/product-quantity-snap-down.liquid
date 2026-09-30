@@ -1,0 +1,27 @@
+{%- liquid
+  comment
+    Outputs quantity snapped down to the largest multiple of effective MOQ <= qty.
+    If qty is below MOQ but > 0, outputs effective MOQ.
+
+    Accepts:
+      - product: {Object} required
+      - variant: {Object} required
+      - quantity: {Number} required
+  endcomment
+
+  capture effective_moq
+    render 'product-effective-moq', product: product, variant: variant
+  endcapture
+  assign effective_moq = effective_moq | strip | plus: 0
+  assign qty = quantity | plus: 0
+
+  if qty <= 0
+    assign snapped_qty = 0
+  else
+    assign snapped_qty = qty | divided_by: effective_moq | floor | times: effective_moq
+    if snapped_qty == 0
+      assign snapped_qty = effective_moq
+    endif
+  endif
+-%}
+{{- snapped_qty -}}

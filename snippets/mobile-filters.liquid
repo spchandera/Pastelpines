@@ -1,0 +1,87 @@
+{%- liquid
+  assign filters_valid = false
+
+  if results.filters != empty and show_filters
+    assign filters_valid = true
+  endif
+
+  assign filters_active = false
+  assign active_filter_count = 0
+
+  for filter in results.filters
+    assign filter_label_downcase = filter.label | strip | downcase
+    assign filter_param_name_downcase = filter.param_name | downcase
+
+    if template.name == 'collection' and template.suffix == 'hf-plp'
+      if filter_label_downcase == 'color' or filter_label_downcase == 'colour'
+        continue
+      elsif filter_param_name_downcase contains 'color' or filter_param_name_downcase contains 'colour'
+        continue
+      endif
+    endif
+
+    if filter.type == 'price_range' and customer == blank
+      continue
+    endif
+
+    if filter.active_values.size > 0
+      assign filters_active = true
+
+      for active_value in filter.active_values
+        assign active_filter_count = active_filter_count | plus: 1
+      endfor
+    elsif filter.type == 'price_range'
+      if filter.min_value.value > 0
+        assign filters_active = true
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+
+      if filter.max_value.value < filter.range_max
+        assign filters_active = true
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    endif
+  endfor
+-%}
+
+<div
+  class="
+    mobile-filters
+    active
+    {% if enable_sticky_filter_bar %}mobile-filters--sticky{%- endif %}
+    {% if filters_valid and show_sort -%}mobile-filters--has-grid{%- endif %}
+    {% if filters_valid or show_sort -%}show{%- endif %}
+    animation--mobile-filters
+  "
+  data-mobile-filters
+>
+  {%- if filters_valid -%}
+    <div class="mobile-filters__group" data-group="{{ 'filters.title' | t }}">
+      <button
+        type="button"
+        class="mobile-filters__button"
+        data-mobile-filters-toggle
+        data-filter-drawer-target="__tags"
+        data-tags-dropdown
+      >
+        {% render 'icon-filter', icon: 'filter' %}
+
+        {{ 'filters.title' | t }}
+
+        {%- if filters_active -%}
+          <span class="mobile-filters__button-count">{{ active_filter_count }}</span>
+        {%- endif -%}
+      </button>
+    </div>
+  {%- endif -%}
+
+  {%- if show_sort -%}
+    <div class="mobile-filters__group" data-group="{{ heading }}">
+      <button type="button" class="mobile-filters__button" data-filter-drawer-target="__sort" data-sort-dropdown>
+        {% render 'icon-sort', icon: 'sort' %}
+
+        {{ 'filters.sort_title' | t }}
+      </button>
+    </div>
+  {%- endif -%}
+</div>

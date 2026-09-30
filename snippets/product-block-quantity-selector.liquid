@@ -1,0 +1,27 @@
+{% assign label_classes = 'fs-body-100' %}
+
+{%- unless block.settings.show_labels -%}
+  {% assign label_classes = label_classes | append: ' visually-hidden' %}
+{%- endunless -%}
+
+<div
+  class="product__controls-group product__controls-group-quantity  product__block product__block--medium"
+  {{ block.shopify_attributes }}
+>
+  <div class="product__label-wrapper{% unless block.settings.show_labels %} product__label-wrapper--collapse{% endunless %}">
+    <label class="product__label {{ label_classes }}" for="Quantity-Input-{{ product.id }}">
+      {{ 'products.product.quantity' | t }}
+    </label>
+  </div>
+  <div class="product__item">
+    {%- capture initial_moq -%}
+      {%- render 'product-effective-moq', product: product, variant: product.selected_or_first_available_variant -%}
+    {%- endcapture -%}
+    {% render 'quantity-input',
+      id: product.id,
+      initial_value: initial_moq,
+      product: product,
+      variant: product.selected_or_first_available_variant
+    %}
+  </div>
+</div>

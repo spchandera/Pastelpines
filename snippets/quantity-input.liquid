@@ -1,0 +1,89 @@
+{%- liquid
+  comment
+    Accepts:
+      - id: {String} required — unique id suffix
+      - initial_value: {Number|String} required
+      - product: {Object} optional — for MOQ (cart / product page)
+      - variant: {Object} optional — for Tester MOQ override
+      - moq: {Number} optional — pass directly when product/variant unavailable
+  endcomment
+
+  if moq == blank and product != blank
+    capture moq
+      if variant != blank
+        render 'product-effective-moq', product: product, variant: variant
+      else
+        render 'product-effective-moq', product: product
+      endif
+    endcapture
+    assign moq = moq | strip | plus: 0
+  endif
+
+  if moq == blank or moq < 1
+    assign moq = 1
+  endif
+
+  assign max_qty = max_qty | default: blank
+  if max_qty == blank and product != blank and variant != blank
+    capture is_tester_capture
+      render 'product-is-tester', product: product, variant: variant
+    endcapture
+    assign is_tester_capture = is_tester_capture | strip
+    if is_tester_capture == 'true'
+      assign max_qty = 1
+    endif
+  endif
+
+  assign initial_value = initial_value | plus: 0
+  if initial_value < 1
+    assign initial_value = moq
+  endif
+
+  if product != blank and variant != blank
+    capture snapped_initial
+      render 'product-quantity-snap-down', product: product, variant: variant, quantity: initial_value
+    endcapture
+    assign initial_value = snapped_initial | strip | plus: 0
+  else
+    assign remainder = initial_value | modulo: moq
+    if remainder > 0
+      assign initial_value = initial_value | divided_by: moq | floor | times: moq
+      if initial_value == 0
+        assign initial_value = moq
+      endif
+    endif
+  endif
+-%}
+
+<div class="quantity-input" data-moq="{{ moq }}"{% if max_qty != blank %} data-max-qty="{{ max_qty }}"{% endif %}>
+  <button
+    type="button"
+    class="quantity-input__button product__quantity-subtract-item"
+    data-subtract-quantity
+    aria-label="{{ 'general.accessibility.quantity_subtract' | t }}"
+  >
+    {% render 'icon', icon: 'minus-small' %}
+  </button>
+  <label class="visually-hidden" for="Quantity-Input-{{ id }}">{{ 'products.product.quantity' | t }}</label>
+  <input
+    type="number"
+    name="updates[]"
+    id="Quantity-Input-{{ id }}"
+    value="{{ initial_value }}"
+    min="{{ moq }}"
+    step="{{ moq }}"
+    {% if max_qty != blank %}max="{{ max_qty }}"{% endif %}
+    pattern="[0-9]*"
+    class="quantity-input__input"
+    data-quantity-input
+    aria-label="{{ 'general.accessibility.quantity' | t }}"
+  >
+  <button
+    type="button"
+    class="quantity-input__button product__quantity-add-item"
+    data-add-quantity
+    aria-label="{{ 'general.accessibility.quantity_add' | t }}"
+  >
+    {% render 'icon', icon: 'plus-small' %}
+  </button>
+</div>

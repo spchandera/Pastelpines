@@ -1,0 +1,29 @@
+{%- liquid
+  comment
+    Outputs "true" or "false" — whether the variant is a Size = "Tester" option.
+
+    Accepts:
+      - product: {Object} required
+      - variant: {Object} required
+  endcomment
+
+  assign is_tester = false
+
+  if variant != blank
+    assign size_option_index = -1
+    for option_name in product.options
+      if option_name == 'Size'
+        assign size_option_index = forloop.index
+      endif
+    endfor
+
+    if size_option_index == 1 and variant.option1 == 'Tester'
+      assign is_tester = true
+    elsif size_option_index == 2 and variant.option2 == 'Tester'
+      assign is_tester = true
+    elsif size_option_index == 3 and variant.option3 == 'Tester'
+      assign is_tester = true
+    endif
+  endif
+-%}
+{%- if is_tester -%}true{%- else -%}false{%- endif -%}

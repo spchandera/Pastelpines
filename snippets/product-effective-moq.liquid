@@ -1,0 +1,31 @@
+{%- liquid
+  comment
+    Outputs the effective minimum order quantity for a product/variant.
+    - Uses product metafield custom.moq (default 1)
+    - Size option value "Tester" forces MOQ 1
+
+    Accepts:
+      - product: {Object} required
+      - variant: {Object} optional
+  endcomment
+
+  assign effective_moq = product.metafields.custom.moq.value | default: product.metafields.custom.moq | default: 1
+  if effective_moq == blank
+    assign effective_moq = 1
+  endif
+  assign effective_moq = effective_moq | plus: 0
+  if effective_moq < 1
+    assign effective_moq = 1
+  endif
+
+  if variant != blank
+    capture is_tester_capture
+      render 'product-is-tester', product: product, variant: variant
+    endcapture
+    assign is_tester_capture = is_tester_capture | strip
+    if is_tester_capture == 'true'
+      assign effective_moq = 1
+    endif
+  endif
+-%}
+{{- effective_moq -}}

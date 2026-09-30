@@ -1,0 +1,232 @@
+<!doctype html>
+
+<!--
+  ___                 ___           ___           ___
+       /  /\                     /__/\         /  /\         /  /\
+      /  /:/_                    \  \:\       /  /:/        /  /::\
+     /  /:/ /\  ___     ___       \  \:\     /  /:/        /  /:/\:\
+    /  /:/ /:/ /__/\   /  /\  ___  \  \:\   /  /:/  ___   /  /:/  \:\
+   /__/:/ /:/  \  \:\ /  /:/ /__/\  \__\:\ /__/:/  /  /\ /__/:/ \__\:\
+   \  \:\/:/    \  \:\  /:/  \  \:\ /  /:/ \  \:\ /  /:/ \  \:\ /  /:/
+    \  \::/      \  \:\/:/    \  \:\  /:/   \  \:\  /:/   \  \:\  /:/
+     \  \:\       \  \::/      \  \:\/:/     \  \:\/:/     \  \:\/:/
+      \  \:\       \__\/        \  \::/       \  \::/       \  \::/
+       \__\/                     \__\/         \__\/         \__\/
+
+  --------------------------------------------------------------------
+  #  Stiletto v5.2.1
+  #  Documentation: https://help.fluorescent.co/v/stiletto
+  #  Purchase: https://themes.shopify.com/themes/stiletto/
+  #  A product by Fluorescent: https://fluorescent.co/
+  --------------------------------------------------------------------
+-->
+
+<html
+  class="no-js"
+  lang="{{ request.locale.iso_code }}"
+  style="
+    --announcement-height: 1px;
+    --mobile-sticky-header-height: 0px;
+    --mobile-sticky-announcement-height: 0px;
+  "
+>
+
+  <head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5FDGXRG');</script>
+    <!-- End Google Tag Manager -->
+
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    
+    {% render 'meta-description' %}
+
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+    {%- if settings.favicon != blank -%}
+      <link rel="shortcut icon" href="{{ settings.favicon | image_url: width: 32, height: 32 }}" type="image/png">
+    {%- endif -%}
+
+    {%- capture seo_title -%}
+      {%- if request.page_type == 'search' and search.performed == true -%}
+        {{ 'search.heading' | t: count: search.results_count }}:
+        {{ 'search.results_with_count' | t: terms: search.terms, count: search.results_count }}
+      {%- else -%}
+        {{ page_title }}
+      {%- endif -%}
+      {%- if current_tags -%}
+        {%- assign meta_tags = current_tags | join: ', ' -%}
+        &ndash; {{ 'general.meta.tags' | t: tags: meta_tags -}}
+      {%- endif -%}
+      {%- if current_page != 1 -%}
+        &ndash; {{ 'general.meta.page' | t: page: current_page }}
+      {%- endif -%}
+      {%- assign escaped_page_title = page_title | escape -%}
+      {%- unless escaped_page_title contains shop.name -%}
+        &ndash; {{ shop.name }}
+      {%- endunless -%}
+    {%- endcapture -%}
+
+    <title>{{ seo_title | strip }}</title>
+
+    {% render 'social-meta-tags' %}
+
+    {% render 'theme-setup' %}
+    {% render 'theme-setting-vars' %}
+    {%- render 'theme-globals' -%}
+
+    {{ 'product-page.css' | asset_url | stylesheet_tag: preload: true }}
+    <style>
+      @font-face {
+          font-family: "Avenir";
+          src: url('{{ "Avenir-Heavy.woff2" | asset_url }}') format('woff2');
+          font-weight: 700;
+          font-style: normal;
+          font-display: swap;
+      }
+        @font-face {
+            font-family: "Avenir", serif;
+            src: url('{{ "Avenir-Light.ttf" | asset_url }}') format('truetype');
+            font-weight: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: "Avenir", serif;
+            src: url('{{ "Avenir-Regular.ttf" | asset_url }}') format('truetype');
+            font-weight: 300;
+            font-display: swap;
+        }
+    </style>
+    {{ content_for_header }}
+{% if page.handle == 'hf-private-labelling' %}
+  <link rel="canonical" href="https://pastelpines.myshopify.com/pages/private-labelling">
+  <meta name="robots" content="noindex, follow">
+{% endif %}
+  </head>
+
+  <body class="template-{{ request.page_type | handle }} suffix-{{ template.suffix }}
+    {% if template.suffix == 'homefragance-homepage' or template.suffix == 'scentica-homefragance' or template.suffix == 'waxflower-hf'
+                                                 or template.suffix == 'vivante-hf' or template.suffix == 'renu-hf' or template.suffix == 'become-a-stockist-hf' 
+                                                or template.suffix == 'home-fragance-faqs' or  template.suffix == 'hf-pdp' or template.suffix == 'hf-private-labelling' or template.suffix == 'hf-page'
+                                                or template.suffix == 'hf-blogs' or template.suffix == 'hf-blog-post' %}
+  hf-layout
+
+{% elsif template.suffix == 'ds-home' or template.suffix == 'responsible-sourcing-ds' or template.suffix == 'natural-variations-in-she'
+                                      or template.suffix == 'custom-carved-cowrie-shel' or template.suffix == 'shells-driftwood-faqs'  
+                                      or template.suffix == 'become-a-stockist-ds' or template.suffix == 'ds-plp' or template.suffix == 'ds-pdp' or template.suffix == 'ds-styling-inspo' 
+                                      or template.suffix == 'ds-page' or template.suffix == 'ds-blogs' or template.suffix == 'ds-blog-post' %}
+  ds-layout
+
+{% elsif template.suffix == 'home-pastel-pines' or template.suffix == 'private-labelling' or template.suffix == 'pastel-pines-faqs' 
+                                                or template.suffix == 'become-a-stockist-pastel' or request.page_type == 'index' %}
+  ppines-layout
+{% endif %}">
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5FDGXRG"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+    <div class="page">
+      {% if settings.enable_page_transitions %}
+        {% render 'page-transition-overlay' %}
+      {% endif %}
+
+      <div class="theme-editor-scroll-offset"></div>
+
+      <div class="header__space" data-header-space></div>
+
+      {% sections 'overlay-group' %}
+{% if template.suffix == 'homefragance-homepage' or template.suffix == 'scentica-homefragance' or template.suffix == 'waxflower-hf'
+                                                 or template.suffix == 'vivante-hf' or template.suffix == 'renu-hf' or template.suffix == 'become-a-stockist-hf' 
+                                                or template.suffix == 'home-fragance-faqs' or template.suffix == 'hf-plp' or template.suffix == 'hf-pdp' or template.suffix == 'hf-private-labelling' or template.suffix == 'hf-page' 
+                                              or template.suffix == 'hf-blogs' or template.suffix == 'hf-blog-post'%}
+  {% sections 'home-fragance-header-group' %}
+
+{% elsif template.suffix == 'ds-home' or template.suffix == 'responsible-sourcing-ds' or template.suffix == 'natural-variations-in-she'
+                                      or template.suffix == 'custom-carved-cowrie-shel' or template.suffix == 'shells-driftwood-faqs'  
+                                      or template.suffix == 'become-a-stockist-ds' or template.suffix == 'ds-plp' or template.suffix == 'ds-pdp' or template.suffix == 'ds-styling-inspo'
+                                    or template.suffix == 'ds-page' or template.suffix == 'ds-blogs' or template.suffix == 'ds-blog-post' %}
+  {% sections 'ds-home-header-group' %}
+
+{% elsif template.suffix == 'home-pastel-pines' or template.suffix == 'private-labelling' or template.suffix == 'pastel-pines-faqs' 
+                                                or template.suffix == 'become-a-stockist-pastel' or request.page_type == 'index' %}
+  {% sections 'header-group' %}
+
+{% else %}
+  {% sections 'header-group' %}
+{% endif %}
+
+
+      {%- if settings.enable_quick_search -%}
+        {% render 'quick-search' %}
+      {%- endif -%}
+
+      <div class="header-overlay" data-header-overlay>
+        <div class="header-overlay__inner"></div>
+      </div>
+
+      <main id="main" class="main">
+        {{ content_for_layout }}
+      </main>
+
+      {% sections 'footer-group' %}
+
+      {% render 'store-availability-drawer' %}
+      {% render 'quick-view-modal' %}
+      {% render 'modal' %}
+      {% render 'back-to-top' %}
+    </div>
+
+    {{ '//www.youtube.com/iframe_api' | script_tag }}
+    {{ '//cdn.shopify.com/shopifycloud/shopify-plyr/v1.0/shopify-plyr.css' | stylesheet_tag }}
+
+    <script>
+      window.themeSettings = window.themeSettings || {};
+      window.themeSettings.minOrderLimit = {{ settings.min_order_limit | default: 0 }};
+    </script>
+
+    <script>
+      document.addEventListener('input', function (event) {
+        const field = event.target;
+
+        if (
+          field.matches('input, textarea') &&
+          field.type !== 'email' &&
+          field.type !== 'password' &&
+          field.type !== 'hidden' &&
+          field.type !== 'file' &&
+          field.type !== 'url'
+        ) {
+          const start = field.selectionStart;
+          const end = field.selectionEnd;
+
+          field.value = field.value.toUpperCase();
+
+          if (start !== null && end !== null) {
+            field.setSelectionRange(start, end);
+          }
+        }
+      });
+    </script>
+
+  </body>
+  <link
+    rel="preload"
+    fetchpriority="low"
+    href="{{ 'theme-deferred.css' | asset_url }}"
+    as="style"
+    onload="this.onload=null;this.rel='stylesheet'"
+  >
+  <noscript><link rel="stylesheet" href="{{ 'theme-deferred.css' | asset_url }}"></noscript>
+</html>

@@ -1,0 +1,221 @@
+<style>
+#section-{{ section.id }} {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  min-height: 600px;     /* minimum */
+  height: auto;               
+  padding: 99px 0;
+
+  {% if section.settings.background_image != blank %}
+    background-image: url({{ section.settings.background_image | image_url: width: 1920 }});
+  {% endif %}
+}
+
+#section-{{ section.id }}::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: {{ section.settings.overlay_color }};
+  opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  z-index: 1;
+}
+
+.sub-footer-inner {
+  position: relative;
+  z-index: 2;       
+  height: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sub-footer-heading {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #fff;
+}
+.sub-footer-heading >*{
+    font-size: 40px;
+}
+
+.sub-footer-content {
+  display: grid;
+  grid-template-columns: repeat({{ section.settings.sub_desktop_columns | plus: 0 }}, 1fr); 
+  row-gap: 50px;                         
+  column-gap: 80px;                     
+}
+
+.sub-footer-item {
+  color: #fff;
+}
+
+.sub-footer-item h3 {
+  margin-bottom: 10px;
+  font-size: 25px;
+}
+
+.sub-footer-item .sub-footer-desc {
+  font-size: 20px;
+  line-height: 1.6;
+  padding-top : 10px
+}
+.sub-footer-line{
+  width: 100%;
+  height: 0.5px;
+  background-color: #fff;
+}
+ .sub-footer-item .sub-footer-desc a {
+    text-decoration: underline;
+  }
+
+/* Mobile */
+@media (max-width:959px){
+  .sub-footer-content{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 719px) {
+  #section-{{ section.id }} {
+
+    {% if section.settings.mobile_background_image != blank %}
+      background-image: url({{ section.settings.mobile_background_image | image_url: width: 900 }});
+    {% endif %}
+
+    min-height: auto;
+    padding: 10px 0;
+  }
+  .sub-footer-item .sub-footer-desc{
+    font-size: 18px;
+  }
+  .sub-footer-inner {
+    max-width: 100%;
+  }
+
+
+  .sub-footer-content {
+    grid-template-columns: repeat({{ section.settings.mobile_columns | plus: 0 }}, 1fr);
+    row-gap: 30px;
+    column-gap: 30px;
+  }
+  .sub-footer-heading >*{
+    font-size: 30px;
+  }
+  .sub-footer-heading{
+    margin-bottom: 20px;
+  }
+}
+</style>
+
+<section id="section-{{ section.id }}">
+  <div class="sub-footer-inner section">
+
+    {% if section.settings.main_heading != blank %}
+      <div class="sub-footer-heading">
+        {{ section.settings.main_heading }}
+      </div>
+    {% endif %}
+
+    <div class="sub-footer-content">
+      {% for block in section.blocks %}
+        <div class="sub-footer-item" {{ block.shopify_attributes }}>
+          {% if block.settings.sub_footer_title != blank %}
+            <h3>{{ block.settings.sub_footer_title }}</h3>
+            <p class="sub-footer-line"></p>
+          {% endif %}
+
+          {% if block.settings.sub_footer_description != blank %}
+            <div class="sub-footer-desc">
+              {{ block.settings.sub_footer_description }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sub Footer",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_background_image",
+      "label": "Mobile Background Image"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 60
+    },
+    {
+      "type": "richtext",
+      "id": "main_heading",
+      "label": "Main Heading"
+    },
+    {
+      "type": "range",
+      "id": "sub_desktop_columns",
+      "label": "Desktop Columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile Columns",
+      "default": "1",
+      "options": [
+        { "value": "1", "label": "1 Column" },
+        { "value": "2", "label": "2 Columns" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Sub Footer Item",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "sub_footer_title",
+          "label": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "sub_footer_description",
+          "label": "Description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sub Footer",
+      "blocks": [
+        { "type": "item" }
+      ]
+    }
+  ]
+}
+{% endschema %}
