@@ -1,0 +1,26 @@
+{
+  "name": "pastelpines-theme",
+  "version": "1.0.0",
+  "description": "Custom scripts and tests for the Pastelpines Shopify theme.",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["lcov", "text-summary"],
+    "collectCoverageFrom": [
+      "assets/cart-counter.js",
+      "assets/collection-sku-sort.js",
+      "assets/custom-events.js"
+    ],
+    "testMatch": ["<rootDir>/tests/**/*.test.js"]
+  }
+}

@@ -1,177 +1,141 @@
+/**
+ * Cart counter + minimum-order checkout gate.
+ *
+ * Keeps the header cart badge in sync with the live cart and disables the
+ * checkout controls until the cart total meets the configured minimum order
+ * amount. A single fetch interceptor watches for cart mutations so both
+ * behaviours stay in sync without polling.
+ */
 (function () {
-  console.log('[CART COUNT] Auto-init file loaded');
-  
-  let lastCartCount = null;
-  let fetchBound = false;
+  var CART_COUNT_SELECTOR = '[data-js-cart-count]';
+  var CART_ICON_SELECTOR = '[data-js-cart-icon]';
+  var CHECKOUT_BTN_SELECTOR = 'button[name="checkout"]';
+  var DYNAMIC_WRAP_SELECTOR = '.dynamic-button-wrap';
+  var DISABLED_CLASS = 'checkout-disabled';
+  var CART_MUTATION_PATHS = ['/cart/add', '/cart/change', '/cart/update'];
 
-  function fetchCartAndUpdate() {
-    console.log('[CART COUNT] Fetching /cart.js');
+  var lastCartCount = null;
+  var fetchPatched = false;
 
-    fetch('/cart.js')
-      .then(res => res.json())
-      .then(cart => {
-        console.log('[CART COUNT] item_count:', cart.item_count);
-        console.log('CART Total', cart.total_price);
-
-        if (cart.item_count !== lastCartCount) {
-          lastCartCount = cart.item_count;
-          updateCartCount(cart.item_count);
-        }
-      })
-      .catch(err => {
-        console.error('[CART COUNT] Error:', err);
-      });
+  function getMinOrderLimit() {
+    return Number((window.themeSettings && window.themeSettings.minOrderLimit) || 0);
   }
 
-    function updateCartCount(count) {
-    const el = document.querySelector('[data-js-cart-count]');
-    const icon = document.querySelector('[data-js-cart-icon]');
+  function updateCartCount(count) {
+    var el = document.querySelector(CART_COUNT_SELECTOR);
+    var icon = document.querySelector(CART_ICON_SELECTOR);
 
-    // ❌ Hide / remove when cart is empty
+    // Remove the badge entirely when the cart is empty.
     if (count <= 0) {
-        if (el) {
+      if (el) {
         el.remove();
-        console.log('[CART COUNT] Removed cart count (empty cart)');
-        }
-        return;
+      }
+      return;
     }
 
-    // ✅ Update existing badge
+    // Update the existing badge.
     if (el) {
-        el.textContent = count;
-        return;
+      el.textContent = count;
+      return;
     }
 
-    // ✅ Create badge when count > 0
+    // Create the badge when there is a cart icon to attach it to.
     if (!icon) {
-        console.warn('[CART COUNT] Cart icon not found');
-        return;
+      return;
     }
 
-    const span = document.createElement('span');
+    var span = document.createElement('span');
     span.setAttribute('data-js-cart-count', '');
     span.textContent = count;
     icon.appendChild(span);
+  }
 
-    console.log('[CART COUNT] Created cart count:', count);
+  function setCheckoutEnabled(enabled) {
+    document.querySelectorAll(CHECKOUT_BTN_SELECTOR).forEach(function (btn) {
+      btn.classList.toggle(DISABLED_CLASS, !enabled);
+      btn.disabled = !enabled;
+      if (enabled) {
+        btn.removeAttribute('aria-disabled');
+      } else {
+        btn.setAttribute('aria-disabled', 'true');
+      }
+    });
+
+    document.querySelectorAll(DYNAMIC_WRAP_SELECTOR).forEach(function (wrap) {
+      wrap.classList.toggle(DISABLED_CLASS, !enabled);
+    });
+  }
+
+  function applyCart(cart) {
+    if (!cart) {
+      return;
     }
 
-  function bindFetchWatcher() {
-    if (fetchBound) return;
-    fetchBound = true;
-
-    const originalFetch = window.fetch;
-    window.fetch = function () {
-      return originalFetch.apply(this, arguments).then(response => {
-        if (
-          response.url.includes('/cart/add') ||
-          response.url.includes('/cart/change') ||
-          response.url.includes('/cart/update')
-        ) {
-          console.log('[CART COUNT] Cart updated via:', response.url);
-          fetchCartAndUpdate();
-        }
-        return response;
-      });
-    };
-  }
-
-  bindFetchWatcher();
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fetchCartAndUpdate);
-  } else {
-    fetchCartAndUpdate();
-  }
-
-})();
-
-
-// Custom code for check the min order amount and disable the checkout buttons.
-(function () {
-  console.log('[CHECKOUT LIMIT] Initializing');
-
-  const SELECTOR_CHECKOUT_BTN = 'button[name="checkout"]';
-  const SELECTOR_DYNAMIC_WRAP = '.dynamic-button-wrap';
-
-  function getMinOrderLimit() {
-    return Number(window.themeSettings?.minOrderLimit || 0);
-  }
-
-  function disableCheckoutUI() {
-    // Disable standard checkout buttons
-    document.querySelectorAll(SELECTOR_CHECKOUT_BTN).forEach(btn => {
-      btn.classList.add('checkout-disabled');
-      btn.setAttribute('aria-disabled', 'true');
-      btn.disabled = true;
-    });
-
-    // Disable dynamic checkout wrappers
-    document.querySelectorAll(SELECTOR_DYNAMIC_WRAP).forEach(wrap => {
-      wrap.classList.add('checkout-disabled');
-    });
-  }
-
-  function enableCheckoutUI() {
-    // Enable standard checkout buttons
-    document.querySelectorAll(SELECTOR_CHECKOUT_BTN).forEach(btn => {
-      btn.classList.remove('checkout-disabled');
-      btn.removeAttribute('aria-disabled');
-      btn.disabled = false;
-    });
-
-    // Enable dynamic checkout wrappers
-    document.querySelectorAll(SELECTOR_DYNAMIC_WRAP).forEach(wrap => {
-      wrap.classList.remove('checkout-disabled');
-    });
-  }
-
-  function validateCheckout(cartTotal) {
-    const minLimit = getMinOrderLimit();
-
-    console.log('[CHECKOUT LIMIT] Cart:', cartTotal, 'Min:', minLimit);
-
-    if (cartTotal < minLimit) {
-      disableCheckoutUI();
-    } else {
-      enableCheckoutUI();
+    if (cart.item_count !== lastCartCount) {
+      lastCartCount = cart.item_count;
+      updateCartCount(cart.item_count);
     }
+
+    var cartTotal = cart.total_price / 100;
+    setCheckoutEnabled(cartTotal >= getMinOrderLimit());
   }
 
-  function fetchCartAndValidate() {
-    fetch('/cart.js')
-      .then(res => res.json())
-      .then(cart => {
-        validateCheckout(cart.total_price / 100);
+  function refreshCart() {
+    return fetch('/cart.js')
+      .then(function (res) {
+        return res.json();
       })
-      .catch(err => {
-        console.error('[CHECKOUT LIMIT] Error:', err);
+      .then(applyCart)
+      .catch(function () {
+        // Network/parse failures leave the current UI state untouched.
       });
   }
 
-  function bindCartWatcher() {
-    const originalFetch = window.fetch;
+  function isCartMutation(url) {
+    return CART_MUTATION_PATHS.some(function (path) {
+      return url.indexOf(path) !== -1;
+    });
+  }
 
-    window.fetch = function () {
-      return originalFetch.apply(this, arguments).then(response => {
-        if (
-          response.url.includes('/cart/add') ||
-          response.url.includes('/cart/change') ||
-          response.url.includes('/cart/update')
-        ) {
-          fetchCartAndValidate();
+  function patchFetch() {
+    if (fetchPatched || typeof window.fetch !== 'function') {
+      return;
+    }
+    fetchPatched = true;
+
+    var originalFetch = window.fetch;
+    window.fetch = function (...args) {
+      return originalFetch.apply(this, args).then(function (response) {
+        if (response && response.url && isCartMutation(response.url)) {
+          refreshCart();
         }
         return response;
       });
     };
   }
 
-  bindCartWatcher();
+  function init() {
+    patchFetch();
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fetchCartAndValidate);
-  } else {
-    fetchCartAndValidate();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', refreshCart, { once: true });
+    } else {
+      refreshCart();
+    }
   }
 
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      getMinOrderLimit: getMinOrderLimit,
+      updateCartCount: updateCartCount,
+      setCheckoutEnabled: setCheckoutEnabled,
+      applyCart: applyCart,
+      isCartMutation: isCartMutation,
+      refreshCart: refreshCart,
+      patchFetch: patchFetch,
+      init: init,
+    };
+  } else {
+    init();
+  }
 })();

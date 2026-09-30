@@ -130,7 +130,17 @@ function initCollectionSkuSort() {
   });
 }
 
-if (document.readyState === 'loading') {
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    getActiveSortValue,
+    sortProductsBySku,
+    initCollectionSkuSort,
+    scheduleSort,
+    observeCollection,
+    getCollectionSection,
+    ACTIVE_SORT_VALUE,
+  };
+} else if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initCollectionSkuSort, { once: true });
 } else {
   initCollectionSkuSort();
